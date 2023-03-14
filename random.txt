@@ -1,0 +1,46 @@
+if (rfid.PICC_ReadCardSerial())
+  {
+    for (byte i = 0; i < 4; i++)
+    {
+      tag += rfid.uid.uidByte[i];
+    }
+    Serial.println(tag);
+
+    lcd.clear();
+    lcd.setCursor(0, 0); // Move the cursor at origin
+    lcd.print("RFID TAG FOUND");
+
+    if (tag == "14723814217")
+    {
+      digitalWrite(SUCCESS_LED_PIN, HIGH);
+
+      lcd.setCursor(0, 2); // Move the cursor at origin
+      lcd.print("TRANSACTION SUCCESS");
+    }
+    else
+    {
+      digitalWrite(ERR_LED_PIN, HIGH);
+
+      lcd.setCursor(0, 2); // Move the cursor at origin
+      lcd.print("TRANSACTION FAILED");
+    }
+    turnOnTime = millis();
+    Serial.println(turnOnTime);
+
+    tag = "";
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
+  }
+  if (digitalRead(SUCCESS_LED_PIN))
+  {
+    if (millis() - turnOnTime >= interval)
+      digitalWrite(SUCCESS_LED_PIN, LOW);
+  }
+  else if (digitalRead(ERR_LED_PIN))
+  {
+    if (millis() - turnOnTime >= interval)
+      digitalWrite(ERR_LED_PIN, LOW);
+  }
+
+  if (!rfid.PICC_IsNewCardPresent())
+    return;
